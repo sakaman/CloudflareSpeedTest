@@ -17,6 +17,9 @@ var (
 	version, versionNew string
 )
 
+const defaultIPAddress = "https://www.baipiao.eu.org/cloudflare/ips-v4"
+const defaultCFColoAddress = "https://www.baipiao.eu.org/cloudflare/colo"
+
 func init() {
 	var printVersion bool
 	var help = `
@@ -116,6 +119,10 @@ https://github.com/XIU2/CloudflareSpeedTest
 		println(version)
 		fmt.Println("检查版本更新中...")
 		checkUpdate()
+		fmt.Println("更新IP Range中...")
+		updateIPAddress()
+		fmt.Println("更新CF colo中...")
+		updateCFColo()
 		if versionNew != "" {
 			fmt.Printf("*** 发现新版本 [%s]！请前往 [https://github.com/XIU2/CloudflareSpeedTest] 更新！ ***", versionNew)
 		} else {
@@ -171,4 +178,64 @@ func checkUpdate() {
 	if string(body) != version {
 		versionNew = string(body)
 	}
+}
+
+func updateIPAddress() {
+	response, err := http.Get(defaultIPAddress)
+	if err != nil {
+		fmt.Println("获取IP Address失败...")
+		return
+	}
+	if response.StatusCode != 200 {
+		fmt.Println("获取IP Address失败...")
+		return
+	}
+	defer response.Body.Close()
+	bytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Println("更新IP Address失败...")
+		return
+	}
+	file, err := os.Create(task.IPFile)
+	if err != nil {
+		fmt.Println("更新IP Address失败...")
+		return
+	}
+	defer file.Close()
+	_, err = file.Write(bytes)
+	if err != nil {
+		fmt.Println("更新IP Address失败...")
+		return
+	}
+	fmt.Println("更新IP Address成功...")
+}
+
+func updateCFColo() {
+	response, err := http.Get(defaultCFColoAddress)
+	if err != nil {
+		fmt.Println("获取CFcolo失败...")
+		return
+	}
+	if response.StatusCode != 200 {
+		fmt.Println("获取CFcolo失败...")
+		return
+	}
+	defer response.Body.Close()
+	bytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Println("更新CFcolo失败...")
+		return
+	}
+	file, err := os.Create(task.CFColoFile)
+	if err != nil {
+		fmt.Println("更新CFcolo失败...")
+		return
+	}
+	defer file.Close()
+	_, err = file.Write(bytes)
+	if err != nil {
+		fmt.Println("更新CFcolo失败...")
+		return
+	}
+	fmt.Println("更新CFcolo成功...")
 }

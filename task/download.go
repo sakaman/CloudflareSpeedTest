@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"sort"
@@ -22,6 +23,8 @@ const (
 	defaultDisableDownload         = false
 	defaultTestNum                 = 10
 	defaultMinSpeed        float64 = 0.0
+
+	defaultCDNUrl = "https://www.baipiao.eu.org/cloudflare/url"
 )
 
 var (
@@ -35,7 +38,11 @@ var (
 
 func checkDownloadDefault() {
 	if URL == "" {
-		URL = defaultURL
+		URL = getUrl()
+		if URL == "" {
+			URL = defaultURL
+		}
+		fmt.Println("CDN address" + URL)
 	}
 	if Timeout <= 0 {
 		Timeout = defaultTimeout
@@ -180,4 +187,20 @@ func downloadHandler(ip *net.IPAddr) float64 {
 		contentRead += int64(bufferRead)
 	}
 	return e.Value() / (Timeout.Seconds() / 120)
+}
+
+func getUrl() string {
+	response, err := http.Get(defaultCDNUrl)
+	if err != nil {
+		return ""
+	}
+	if response.StatusCode != 200 {
+		return ""
+	}
+	defer response.Body.Close()
+	bytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return ""
+	}
+	return string(bytes)
 }

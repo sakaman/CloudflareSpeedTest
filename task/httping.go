@@ -13,12 +13,16 @@ import (
 	"time"
 )
 
+const defaultCFColoFile = "cfcolo.txt"
+
 var (
 	Httping           bool
 	HttpingStatusCode int
 	HttpingCFColo     string
 	HttpingCFColomap  *sync.Map
 	OutRegexp         = regexp.MustCompile(`[A-Z]{3}`)
+
+	CFColoFile = defaultCFColoFile
 )
 
 // pingReceived pingTotalTime
